@@ -1,0 +1,80 @@
+name: iOS AltStore Test Build
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-unsigned-ipa:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.13.1
+          cache: npm
+
+      - run: npm ci
+      - run: npx expo prebuild --platform ios --non-interactive
+
+      - name: Build unsigned iOS app
+        shell: bash
+        run: |
+          set -euo pipefail
+          workspace="$(find ios -maxdepth 1 -name '*.xcworkspace' -print -quit)"
+          if [ -z "$workspace" ]; then
+            echo "No iOS workspace was generated." >&2
+            exit 1
+          fi
+
+          schemes_json="$(xcodebuild -list -json -workspace "$workspace")"
+          scheme="$(printf '%s' "$schemes_json" | node -e '
+            let input = "";
+            process.stdin.setEncoding("utf8");
+            process.stdin.on("data", chunk => input += chunk);
+            process.stdin.on("end", () => {
+              const data = JSON.parse(input);
+              const schemes = data.workspace?.schemes ?? data.project?.schemes ?? [];
+              if (schemes.length === 0) process.exit(1);
+              process.stdout.write(schemes[0]);
+            });
+          ')"
+
+          derived_data="$RUNNER_TEMP/huanlante-derived-data"
+          xcodebuild \
+            -workspace "$workspace" \
+            -scheme "$scheme" \
+            -configuration Debug \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath "$derived_data" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build
+
+          app_path="$(find "$derived_data/Build/Products/Debug-iphoneos" -maxdepth 1 -type d -name '*.app' -print -quit)"
+          if [ -z "$app_path" ]; then
+            echo "The iOS app product was not found." >&2
+            exit 1
+          fi
+
+          bundle_id=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app_path/Info.plist")
+          if [ "$bundle_id" != "com.huanlante.app" ]; then
+            echo "Unexpected iOS bundle identifier: $bundle_id" >&2
+            exit 1
+          fi
+
+          mkdir -p "$RUNNER_TEMP/ipa/Payload"
+          ditto "$app_path" "$RUNNER_TEMP/ipa/Payload/$(basename "$app_path")"
+          ditto -c -k --sequesterRsrc --keepParent "$RUNNER_TEMP/ipa/Payload" "$RUNNER_TEMP/HuanlanTe-unsigned.ipa"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HuanlanTe-unsigned-iOS-IPA
+          path: ${{ runner.temp }}/HuanlanTe-unsigned.ipa
+          if-no-files-found: error
+          retention-days: 7

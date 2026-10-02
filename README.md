@@ -33,7 +33,7 @@ React Native 0.86 · Expo SDK 57 · TypeScript 6 · VisionCamera 5 · Worklets /
 - 扩展语言时，在 `src/i18n/translations.ts` 增加完整词条并扩展 `Lang` / `SUPPORTED_LANGS`，在 `app.json` 添加系统支持语言，并为原生 iOS 文案添加 `src/locales/<BCP-47>.json` 及对应 `locales` 项。
 
 ### 开发（Windows 环境）
-Windows 可运行 Metro 并编辑代码，但无法本地构建或运行 iOS 模拟器。请在 iPhone 上安装由 EAS 产出的 development build，再连接 `expo start` 启动的 Metro 服务。原生相机模块无法在 Expo Go 中运行。
+Windows 可运行 Metro 并编辑代码，但无法本地构建 iOS 原生应用或运行 iOS 模拟器。原生相机模块无法在 Expo Go 中运行。
 
 ```powershell
 npm install
@@ -42,6 +42,18 @@ npx eas-cli@latest build:configure
 npx eas-cli@latest build --platform ios --profile development
 npx expo start --dev-client
 ```
+
+### 免费个人签名：AltStore（iPhone 实机测试）
+不加入 Apple Developer Program 也可以用普通 Apple ID 侧载测试，但免费签名有苹果限制：应用约 **7 天后需要刷新**、同一设备最多同时启用 **3 个侧载应用**，每个 Apple ID 的 App ID 数量也有限。AltStore/AltServer 可通过 Windows 安装和刷新应用；本流程由 GitHub Actions 的 macOS runner 编译未签名 IPA，AltServer 再用你的 Apple ID 在本机签名。Apple ID 密码不需要、也不应放入 GitHub Secrets 或本仓库。
+
+1. 将本项目推送到 GitHub，并在仓库 **Actions** 中启用工作流。
+2. 进入 **Actions → iOS AltStore Test Build → Run workflow**。完成后下载 `HuanlanTe-unsigned-iOS-IPA` artifact 并解压取得 `.ipa`。
+3. 按 [AltStore Windows 官方安装说明](https://faq.altstore.io/altstore-classic/how-to-install-altstore-windows) 安装 AltServer；Windows 版 iTunes 与 iCloud 按官方要求从 Apple 网站安装，连接并信任 iPhone。
+4. 在 iPhone 安装并打开 AltStore。在 AltStore 的 **My Apps** 页面通过 `+` 选择下载的 IPA；按提示使用自己的 Apple ID 签名安装。
+5. 测试期间让 AltServer 在 Windows 电脑运行，并让 iPhone 与电脑连接 USB 或处于同一 Wi-Fi 网络；定期在 AltStore 刷新应用。iOS 16 及以上还需启用开发者模式。
+6. 启动 Metro：`npx expo start --dev-client`，在 iPhone 的 HuanlanTe development client 中连接项目。
+
+此工作流**不使用 Apple Developer Program 证书**，只生成未签名真机开发包供 AltStore 个人签名；它不是 App Store 发布构建。免费个人签名额度或苹果策略变化时，安装可能失败，需要查看 AltStore 当前说明。
 
 ### 云端发布与签名（正规签名，非临时）
 发布使用 **EAS Build**（`eas.json` 的 `production` profile），生产构建配置为从 EAS 读取正式凭证（`credentialsSource: remote`），**不使用调试 / 临时签名**。首次发布前必须先在 EAS 配置正式凭证；仓库当前尚未配置 EAS 项目或签名凭证：
@@ -86,7 +98,7 @@ React Native 0.86 · Expo SDK 57 · TypeScript 6 · VisionCamera 5 · Worklets /
 - To add a language, add a complete dictionary in `src/i18n/translations.ts`, extend `Lang` / `SUPPORTED_LANGS`, declare it in `app.json` `supportedLocales`, and add `src/locales/<BCP-47>.json` plus a `locales` entry for native iOS strings.
 
 ### Development on Windows
-Windows can run Metro and edit the project, but cannot build or run the iOS Simulator locally. Install a development build on an iPhone produced by EAS, then connect it to the Metro server started by `expo start`. Native camera modules do not run in Expo Go.
+Windows can run Metro and edit the project, but cannot build iOS native apps or run the iOS Simulator locally. Native camera modules do not run in Expo Go.
 
 ```powershell
 npm install
@@ -95,6 +107,18 @@ npx eas-cli@latest build:configure
 npx eas-cli@latest build --platform ios --profile development
 npx expo start --dev-client
 ```
+
+### Free personal signing: AltStore (physical iPhone testing)
+A regular Apple ID can sideload a test app without joining the Apple Developer Program, subject to Apple's free-signing limits: apps need refreshing after about **7 days**, no more than **3 sideloaded apps** can be active on one device, and Apple IDs have a limited App ID allowance. GitHub Actions builds an unsigned device IPA on a macOS runner; AltServer then signs it locally with your Apple ID. Do not put your Apple ID password in GitHub Secrets or this repository.
+
+1. Push this project to GitHub and enable Actions for the repository.
+2. Open **Actions → iOS AltStore Test Build → Run workflow**. When complete, download and extract the `HuanlanTe-unsigned-iOS-IPA` artifact.
+3. Install AltServer on Windows using [AltStore's official Windows guide](https://faq.altstore.io/altstore-classic/how-to-install-altstore-windows). Install iTunes and iCloud directly from Apple as required by that guide, then connect and trust your iPhone.
+4. Install and open AltStore on the iPhone. From **My Apps**, tap `+`, choose the downloaded IPA, and follow the prompts to sign it with your own Apple ID.
+5. Keep AltServer running on Windows and connect the iPhone by USB or the same Wi-Fi network. Refresh the app periodically in AltStore. On iOS 16 or later, enable Developer Mode.
+6. Start Metro with `npx expo start --dev-client`, then connect to the project from HuanlanTe's development client.
+
+This workflow does **not** use an Apple Developer Program certificate. It creates an unsigned device development build for AltStore personal signing, not an App Store release. Apple may change free-signing limits; consult AltStore's current instructions if installation fails.
 
 ### Cloud release and signing (proper, non-temporary signing)
 Releases use **EAS Build** (`production` profile in `eas.json`), configured to read formal production credentials from EAS (`credentialsSource: remote`) — **not debug or temporary signing**. EAS credentials have not yet been configured for this repository; set them up before the first release:

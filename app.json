@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "HuanlanTe",
-    "slug": "huanlante",
+    "slug": "huanlante-ewtgg2gr8dqrp06xvqxm",
     "description": "A bilingual manual camera app for iOS and Android, built with Expo and VisionCamera.",
     "githubUrl": "https://github.com/nanjuong/HuanlanTe",
     "version": "1.0.0",
@@ -19,7 +19,13 @@
       "infoPlist": {
         "NSCameraUsageDescription": "HuanlanTe uses the camera to capture photos.",
         "NSPhotoLibraryUsageDescription": "HuanlanTe reads your selected photos.",
-        "NSPhotoLibraryAddUsageDescription": "HuanlanTe saves the photos you capture."
+        "NSPhotoLibraryAddUsageDescription": "HuanlanTe saves the photos you capture.",
+        "CFBundleLocalizations": [
+          "en",
+          "zh-CN",
+          "zh-TW"
+        ],
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -30,7 +36,13 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
+        "android.permission.READ_MEDIA_IMAGES"
+      ]
     },
     "plugins": [
       [
@@ -65,6 +77,12 @@
       "en": "./src/locales/en.json",
       "zh-CN": "./src/locales/zh-CN.json",
       "zh-TW": "./src/locales/zh-TW.json"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "6676afc0-4c18-4048-8cf7-5d5521204e26"
+      }
+    },
+    "owner": "aerospace-future-technology-studio"
   }
 }
