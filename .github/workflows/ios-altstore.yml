@@ -30,18 +30,24 @@ jobs:
             exit 1
           fi
 
+          app_name="$(node -e 'process.stdout.write(require("./app.json").expo.name)')"
           schemes_json="$(xcodebuild -list -json -workspace "$workspace")"
-          scheme="$(printf '%s' "$schemes_json" | node -e '
+          scheme="$(printf '%s' "$schemes_json" | APP_NAME="$app_name" node -e '
             let input = "";
             process.stdin.setEncoding("utf8");
             process.stdin.on("data", chunk => input += chunk);
             process.stdin.on("end", () => {
               const data = JSON.parse(input);
               const schemes = data.workspace?.schemes ?? data.project?.schemes ?? [];
-              if (schemes.length === 0) process.exit(1);
-              process.stdout.write(schemes[0]);
+              const scheme = schemes.find(candidate => candidate === process.env.APP_NAME);
+              if (!scheme) {
+                console.error(`App scheme "${process.env.APP_NAME}" not found. Available schemes: ${schemes.join(", ")}`);
+                process.exit(1);
+              }
+              process.stdout.write(scheme);
             });
           ')"
+          echo "Building app scheme: $scheme"
 
           derived_data="$RUNNER_TEMP/huanlante-derived-data"
           xcodebuild \
@@ -56,17 +62,32 @@ jobs:
             CODE_SIGN_IDENTITY="" \
             build
 
-          app_path="$(find "$derived_data/Build/Products/Debug-iphoneos" -maxdepth 1 -type d -name '*.app' -print -quit)"
+          products_dir="$derived_data/Build/Products"
+          app_path=""
+          while IFS= read -r candidate; do
+            if ! candidate_bundle_id=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$candidate/Info.plist" 2>/dev/null); then
+              echo "Unable to read bundle identifier from app candidate: $candidate" >&2
+              continue
+            fi
+            echo "Built app candidate: $candidate (bundle id: ${candidate_bundle_id:-unavailable})"
+            if [ "$candidate_bundle_id" = "com.huanlante.app" ]; then
+              app_path="$candidate"
+              break
+            fi
+          done < <(find "$products_dir" -type d -name '*.app' -prune -print 2>/dev/null)
+
           if [ -z "$app_path" ]; then
             echo "The iOS app product was not found." >&2
+            echo "Build products directory contents:" >&2
+            if [ -d "$products_dir" ]; then
+              find "$products_dir" -maxdepth 4 -print >&2
+            else
+              echo "Build products directory does not exist: $products_dir" >&2
+            fi
             exit 1
           fi
 
           bundle_id=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app_path/Info.plist")
-          if [ "$bundle_id" != "com.huanlante.app" ]; then
-            echo "Unexpected iOS bundle identifier: $bundle_id" >&2
-            exit 1
-          fi
 
           mkdir -p "$RUNNER_TEMP/ipa/Payload"
           ditto "$app_path" "$RUNNER_TEMP/ipa/Payload/$(basename "$app_path")"
