@@ -1,0 +1,6 @@
+{
+  "CFBundleDisplayName": "HuanlanTe",
+  "NSCameraUsageDescription": "HuanlanTe uses the camera to capture photos.",
+  "NSPhotoLibraryUsageDescription": "HuanlanTe reads your selected photos.",
+  "NSPhotoLibraryAddUsageDescription": "HuanlanTe saves the photos you capture."
+}

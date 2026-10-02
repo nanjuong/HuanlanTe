@@ -1,15 +1,27 @@
 {
   "expo": {
     "name": "HuanlanTe",
-    "slug": "HuanlanTe",
+    "slug": "huanlante",
     "version": "1.0.0",
     "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#080A08",
+    "platforms": [
+      "ios",
+      "android"
+    ],
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "bundleIdentifier": "com.huanlante.app",
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSCameraUsageDescription": "HuanlanTe uses the camera to capture photos.",
+        "NSPhotoLibraryUsageDescription": "HuanlanTe reads your selected photos.",
+        "NSPhotoLibraryAddUsageDescription": "HuanlanTe saves the photos you capture."
+      }
     },
     "android": {
+      "package": "com.huanlante.app",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -18,8 +30,23 @@
       },
       "predictiveBackGestureEnabled": false
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
+    "plugins": [
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "HuanlanTe reads your selected photos.",
+          "savePhotosPermission": "HuanlanTe saves the photos you capture.",
+          "granularPermissions": [
+            "photo"
+          ]
+        }
+      ],
+      "expo-localization"
+    ],
+    "locales": {
+      "en": "./src/locales/en.json",
+      "zh-CN": "./src/locales/zh-CN.json",
+      "zh-TW": "./src/locales/zh-TW.json"
     }
   }
 }

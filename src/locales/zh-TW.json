@@ -1,0 +1,6 @@
+{
+  "CFBundleDisplayName": "幻瀾特",
+  "NSCameraUsageDescription": "幻瀾特需要使用相機來拍攝照片。",
+  "NSPhotoLibraryUsageDescription": "幻瀾特會讀取你選擇的照片。",
+  "NSPhotoLibraryAddUsageDescription": "幻瀾特會儲存你拍攝的照片。"
+}
