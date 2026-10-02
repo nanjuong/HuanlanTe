@@ -2,6 +2,8 @@
   "expo": {
     "name": "HuanlanTe",
     "slug": "huanlante",
+    "description": "A bilingual manual camera app for iOS and Android, built with Expo and VisionCamera.",
+    "githubUrl": "https://github.com/nanjuong/HuanlanTe",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
@@ -41,7 +43,23 @@
           ]
         }
       ],
-      "expo-localization"
+      [
+        "expo-localization",
+        {
+          "supportedLocales": {
+            "ios": [
+              "en",
+              "zh-CN",
+              "zh-TW"
+            ],
+            "android": [
+              "en",
+              "zh-CN",
+              "zh-TW"
+            ]
+          }
+        }
+      ]
     ],
     "locales": {
       "en": "./src/locales/en.json",

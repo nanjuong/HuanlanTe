@@ -5,6 +5,8 @@
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0--or--later-blue.svg)](./LICENSE)
 
+GitHub: <https://github.com/nanjuong/HuanlanTe> · GitCode mirror: <https://gitcode.com/AerospaceFutureStudio/HuanlanTe>
+
 ---
 
 ## 中文说明
@@ -27,8 +29,8 @@ React Native 0.86 · Expo SDK 57 · TypeScript 6 · VisionCamera 5 · Worklets /
 - 以 **中文（zh）** 与 **英文（en）** 为内置基线语言。
 - 启动时按设备 BCP-47 区域自动选择语言；未支持的语言回退英文。
 - 应用内右上角提供中 / EN 一键切换。
-- 原生层（应用名称、系统相机 / 相册权限文案）通过 `app.json` 的 `locales`（en / zh-CN / zh-TW）本地化。
-- 在 `src/i18n/translations.ts` 追加语言对象、并在 `SUPPORTED_LANGS` 增加主语言代码即可扩展更多语言。
+- iOS 应用名称和相机 / 相册权限说明通过 `app.json` 的 `locales`（en / zh-CN / zh-TW）本地化；iOS 与 Android 的系统语言设置均声明支持这三种语言。Android 权限弹窗由系统按设备语言显示。
+- 扩展语言时，在 `src/i18n/translations.ts` 增加完整词条并扩展 `Lang` / `SUPPORTED_LANGS`，在 `app.json` 添加系统支持语言，并为原生 iOS 文案添加 `src/locales/<BCP-47>.json` 及对应 `locales` 项。
 
 ### 开发（Windows 环境）
 Windows 可运行 Metro 并编辑代码，但无法本地构建或运行 iOS 模拟器。请在 iPhone 上安装由 EAS 产出的 development build，再连接 `expo start` 启动的 Metro 服务。原生相机模块无法在 Expo Go 中运行。
@@ -42,9 +44,9 @@ npx expo start --dev-client
 ```
 
 ### 云端发布与签名（正规签名，非临时）
-发布使用 **EAS Build**（`eas.json` 的 `production` profile），并采用 **EAS 托管的正式分发凭证**（`credentialsSource: remote`），**不使用调试 / 临时签名**：
+发布使用 **EAS Build**（`eas.json` 的 `production` profile），生产构建配置为从 EAS 读取正式凭证（`credentialsSource: remote`），**不使用调试 / 临时签名**。首次发布前必须先在 EAS 配置正式凭证；仓库当前尚未配置 EAS 项目或签名凭证：
 
-1. 在 `app.json` 设置唯一的 iOS / Android 标识符（当前为 `com.huanlante.app`），并在 `eas.json` 把 `submit.production.ios.ascAppId` 替换为 App Store Connect 中的应用 ID。
+1. 在 `app.json` 设置唯一的 iOS / Android 标识符（当前为 `com.huanlante.app`），并在 `eas.json` 把 `submit.production.ios.ascAppId` 替换为 App Store Connect 中的应用 ID。未替换占位值前不要触发发布。
 2. 运行一次 `npx eas-cli@latest build:configure` 将本目录关联到 EAS 项目。
 3. 运行 `npx eas-cli@latest credentials --platform ios` 配置 EAS 托管的iOS 分发证书与 App Store Connect API 凭证；Android 同理由 EAS 托管正式上传密钥（或自行提供上传密钥并妥善保管，**切勿**提交到仓库）。
 4. 在 GitHub Secrets 中添加 `EXPO_TOKEN`。
@@ -56,7 +58,7 @@ npx expo start --dev-client
 - **社区开源版**：以 GNU GPL-3.0 或更高版本授权，详见 [`LICENSE`](./LICENSE)。
 - **商业专有许可**：如需闭源集成或去除 GPL 义务，可另行签订商业专有许可。请联系版权方获取商业授权条款。
 
-第三方依赖（Expo、React Native、VisionCamera、Nitro 等）保持各自的 MIT / Apache-2.0 许可证，与本项目 GPL 授权并存且不冲突。
+第三方依赖按各自上游许可证分发；请在分发应用时一并遵守依赖的许可证和通知要求。本项目许可证不改变第三方组件各自的授权条款。
 
 ---
 
@@ -80,8 +82,8 @@ React Native 0.86 · Expo SDK 57 · TypeScript 6 · VisionCamera 5 · Worklets /
 - **Chinese (zh)** and **English (en)** are the built-in baseline languages.
 - The UI language is auto-selected from the device BCP-47 locale at launch; unsupported locales fall back to English.
 - A zh / EN toggle sits in the top-right of the app.
-- Native strings (app display name, system camera / photo permission text) are localized through `app.json` `locales` (en / zh-CN / zh-TW).
-- Add a new language by appending a keyed object in `src/i18n/translations.ts` and adding its primary subtag to `SUPPORTED_LANGS`.
+- iOS native strings (app display name and camera / photo permission text) are localized through `app.json` `locales` (en / zh-CN / zh-TW). Both iOS and Android declare these supported system app languages; Android permission dialogs are provided by the OS in its selected language.
+- To add a language, add a complete dictionary in `src/i18n/translations.ts`, extend `Lang` / `SUPPORTED_LANGS`, declare it in `app.json` `supportedLocales`, and add `src/locales/<BCP-47>.json` plus a `locales` entry for native iOS strings.
 
 ### Development on Windows
 Windows can run Metro and edit the project, but cannot build or run the iOS Simulator locally. Install a development build on an iPhone produced by EAS, then connect it to the Metro server started by `expo start`. Native camera modules do not run in Expo Go.
@@ -95,9 +97,9 @@ npx expo start --dev-client
 ```
 
 ### Cloud release and signing (proper, non-temporary signing)
-Releases use **EAS Build** (`production` profile in `eas.json`) with **EAS-managed distribution credentials** (`credentialsSource: remote`) — **not debug or temporary signing**:
+Releases use **EAS Build** (`production` profile in `eas.json`), configured to read formal production credentials from EAS (`credentialsSource: remote`) — **not debug or temporary signing**. EAS credentials have not yet been configured for this repository; set them up before the first release:
 
-1. Set unique iOS / Android identifiers in `app.json` (currently `com.huanlante.app`) and replace `ascAppId` in `eas.json`.
+1. Set unique iOS / Android identifiers in `app.json` (currently `com.huanlante.app`) and replace `ascAppId` in `eas.json`. Do not trigger a release while the placeholder remains.
 2. Run `npx eas-cli@latest build:configure` once to link this folder to an EAS project.
 3. Run `npx eas-cli@latest credentials --platform ios` to configure EAS-managed iOS distribution certificates and App Store Connect API credentials; Android uses EAS-managed production upload keys (or supply your own and keep them safe — never commit them).
 4. Add an Expo access token as the `EXPO_TOKEN` GitHub Actions secret.
@@ -109,4 +111,4 @@ This project is **dual-licensed under GPL-3.0-or-later**:
 - **Open-source community edition**: licensed under the GNU GPL v3.0 or later — see [`LICENSE`](./LICENSE).
 - **Commercial proprietary license**: for closed-source integration or to remove GPL obligations, a separate commercial license is available. Contact the copyright holder for commercial terms.
 
-Third-party dependencies (Expo, React Native, VisionCamera, Nitro, etc.) retain their own MIT / Apache-2.0 licenses and coexist with this project's GPL grant without conflict.
+Third-party dependencies are distributed under their respective upstream licenses. When distributing the app, comply with all dependency license and notice requirements; this project's license does not change the terms for third-party components.

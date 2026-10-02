@@ -1,23 +1,36 @@
 export type Lang = 'zh' | 'en';
+export type TranslationKey = keyof typeof translations.en;
 
 export const SUPPORTED_LANGS: Lang[] = ['zh', 'en'];
 
 export const FALLBACK_LANG: Lang = 'en';
-
-type Dict = Record<string, string>;
 
 /**
  * Built-in translations. Chinese (zh) and English (en) are the baseline.
  * Unknown BCP-47 locales fall back to `en`. To add a language, add a keyed
  * object below and append the primary subtag to SUPPORTED_LANGS.
  */
-export const translations: Record<Lang, Dict> = {
-  en: {
+const en = {
+    appEyebrow: 'HUANLANTE · FIELD CAMERA',
     viewfinderWaiting: 'Viewfinder standby',
     noCameraFound: 'No camera found',
     runOnSupportedDevice: 'Run on a supported iOS or Android device.',
     allowCameraAccess: 'Allow camera access to start shooting.',
     openCamera: 'Open Camera',
+    live: 'LIVE',
+    photoReadout: 'PHOTO  ·  JPEG  ·  AUTO FPS',
+    exposureLocked: 'AE LOCK',
+    exposureAuto: 'AE AUTO',
+    histogramAccessibility: 'Live luminance histogram',
+    cameraFallback: 'CAMERA',
+    exposurePanel: 'EXPOSURE',
+    focusPanel: 'FOCUS',
+    whiteBalancePanel: 'WB',
+    shutterLabel: 'SHUTTER',
+    autoWhiteBalance: 'AUTO  ·  5200 K',
+    photoMode: 'PHOTO',
+    videoMode: 'VIDEO',
+    roadmapFooter: 'RAW / LOG / VIDEO PIPELINE  ·  ROADMAP',
     cameraError: 'Camera error',
     cameraControlUnavailable: 'Camera control unavailable',
     deviceNotSupported: 'This device does not support the setting.',
@@ -58,13 +71,29 @@ export const translations: Record<Lang, Dict> = {
     takePhoto: 'Take photo',
     flipCamera: 'Switch front/back camera',
     switchLanguage: 'Switch language',
-  },
-  zh: {
+} as const;
+
+const zh: { [Key in keyof typeof en]: string } = {
+    appEyebrow: '幻澜特 · 专业取景器',
     viewfinderWaiting: '取景器待开启',
     noCameraFound: '未找到相机',
     runOnSupportedDevice: '请在支持的 iOS 或 Android 设备上运行。',
     allowCameraAccess: '允许相机访问以开始拍摄。',
     openCamera: '开启相机',
+    live: '实时',
+    photoReadout: '照片  ·  JPEG  ·  自动帧率',
+    exposureLocked: '曝光锁定',
+    exposureAuto: '自动曝光',
+    histogramAccessibility: '实时亮度直方图',
+    cameraFallback: '相机',
+    exposurePanel: '曝光',
+    focusPanel: '对焦',
+    whiteBalancePanel: '白平衡',
+    shutterLabel: '快门',
+    autoWhiteBalance: '自动  ·  5200 K',
+    photoMode: '拍照',
+    videoMode: '录像',
+    roadmapFooter: 'RAW / LOG / 视频工作流  ·  开发规划',
     cameraError: '相机错误',
     cameraControlUnavailable: '相机控制不可用',
     deviceNotSupported: '当前设备不支持此设置。',
@@ -105,5 +134,6 @@ export const translations: Record<Lang, Dict> = {
     takePhoto: '拍摄照片',
     flipCamera: '切换前后摄像头',
     switchLanguage: '切换语言',
-  },
 };
+
+export const translations = { en, zh };

@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import Slider from '@react-native-community/slider';
 import * as MediaLibrary from 'expo-media-library';
+import { useLocales } from 'expo-localization';
 import { StatusBar } from 'expo-status-bar';
 import {
   Aperture,
@@ -34,7 +35,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { getSystemLanguage, translate, type Lang } from './src/i18n';
+import { getSystemLanguage, translate, type Lang, type TranslationKey } from './src/i18n';
 
 const COLORS = {
   black: '#080A08',
@@ -63,9 +64,11 @@ function formatShutter(value: number) {
 }
 
 export default function App() {
-  const [lang, setLang] = useState<Lang>(getSystemLanguage());
-  const t = (key: string) => translate(lang, key);
-  const toggleLang = () => setLang((current) => (current === 'zh' ? 'en' : 'zh'));
+  const locales = useLocales();
+  const [selectedLang, setSelectedLang] = useState<Lang | null>(null);
+  const lang = selectedLang ?? getSystemLanguage(locales);
+  const t = (key: TranslationKey) => translate(lang, key);
+  const toggleLang = () => setSelectedLang(lang === 'zh' ? 'en' : 'zh');
 
   const cameraRef = useRef<CameraRef>(null);
   const lastHistogramUpdate = useRef(0);
@@ -253,7 +256,7 @@ export default function App() {
       ) : (
         <View style={styles.previewFallback}>
           <View style={styles.previewMark} />
-          <Text style={styles.fallbackEyebrow}>HUANLANTE · FIELD CAMERA</Text>
+          <Text style={styles.fallbackEyebrow}>{t('appEyebrow')}</Text>
           <Text style={styles.fallbackTitle}>{hasPermission ? t('noCameraFound') : t('viewfinderWaiting')}</Text>
           <Text style={styles.fallbackCopy}>
             {hasPermission ? t('runOnSupportedDevice') : t('allowCameraAccess')}
@@ -318,9 +321,9 @@ export default function App() {
       <View style={styles.readoutRow}>
         <View style={styles.liveBadge}>
           <View style={styles.liveDot} />
-          <Text style={styles.liveText}>LIVE</Text>
+          <Text style={styles.liveText}>{t('live')}</Text>
         </View>
-        <Text style={styles.readoutText}>PHOTO  ·  JPEG  ·  AUTO FPS</Text>
+        <Text style={styles.readoutText}>{t('photoReadout')}</Text>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('toggleTorch')}
@@ -346,10 +349,10 @@ export default function App() {
             <View style={styles.meterCenter} />
             <View style={[styles.meterIndicator, { left: `${50 + exposureBias * 12}%` }]} />
           </View>
-          <Text style={styles.meterLock}>{exposureLocked ? 'AE LOCK' : 'AE AUTO'}</Text>
+          <Text style={styles.meterLock}>{exposureLocked ? t('exposureLocked') : t('exposureAuto')}</Text>
         </View>
         {histogramVisible && isReady && (
-          <View style={styles.histogram} accessibilityLabel="实时亮度直方图">
+          <View style={styles.histogram} accessibilityLabel={t('histogramAccessibility')}>
             {histogram.map((height, index) => (
               <View
                 key={index}
@@ -365,15 +368,15 @@ export default function App() {
           <View style={styles.readoutDivider} />
           <Text style={styles.readoutStrong}>ƒ/{device?.lensAperture.toFixed(1) ?? '—'}</Text>
           <View style={styles.readoutDivider} />
-          <Text style={styles.readoutText}>{device?.localizedName ?? 'CAMERA'}</Text>
+          <Text style={styles.readoutText}>{device?.localizedName ?? t('cameraFallback')}</Text>
         </View>
       </View>
 
       <View style={styles.bottomDock}>
         <View style={styles.panelTabs}>
-          <PanelTab title="EXPOSURE" active={panel === 'exposure'} onPress={() => setPanel('exposure')} />
-          <PanelTab title="FOCUS" active={panel === 'focus'} onPress={() => setPanel('focus')} />
-          <PanelTab title="WB" active={panel === 'white-balance'} onPress={() => setPanel('white-balance')} />
+          <PanelTab title={t('exposurePanel')} active={panel === 'exposure'} onPress={() => setPanel('exposure')} />
+          <PanelTab title={t('focusPanel')} active={panel === 'focus'} onPress={() => setPanel('focus')} />
+          <PanelTab title={t('whiteBalancePanel')} active={panel === 'white-balance'} onPress={() => setPanel('white-balance')} />
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={exposureLocked ? t('unlockExposure') : t('lockExposure')}
@@ -430,7 +433,7 @@ export default function App() {
                   style={styles.slider}
                 />
               </ControlRow>
-              <ControlRow label="SHUTTER" value={formatShutter(shutter)}>
+              <ControlRow label={t('shutterLabel')} value={formatShutter(shutter)}>
                 <Slider
                   accessibilityLabel={t('shutterSpeed')}
                   disabled={!isIOS || !device?.supportsExposureLocking}
@@ -529,7 +532,7 @@ export default function App() {
             <View style={styles.wbContent}>
               <View>
                 <Text style={styles.controlLabel}>{t('whiteBalance')}</Text>
-                <Text style={styles.controlValue}>{whiteBalanceLocked ? t('locked') : 'AUTO  ·  5200 K'}</Text>
+                <Text style={styles.controlValue}>{whiteBalanceLocked ? t('locked') : t('autoWhiteBalance')}</Text>
               </View>
               <Pressable
                 style={[styles.wbButton, whiteBalanceLocked && styles.wbButtonActive]}
@@ -557,10 +560,10 @@ export default function App() {
           <View style={styles.captureCluster}>
             <View style={styles.modeSwitch}>
               <Pressable onPress={() => Alert.alert(t('videoFeature'), t('videoRoadmap'))} style={styles.modeItem}>
-                <Text style={styles.modeText}>VIDEO</Text>
+                <Text style={styles.modeText}>{t('videoMode')}</Text>
               </Pressable>
               <View style={styles.modeItem}>
-                <Text style={[styles.modeText, styles.modeTextActive]}>PHOTO</Text>
+                <Text style={[styles.modeText, styles.modeTextActive]}>{t('photoMode')}</Text>
               </View>
             </View>
             <Pressable
@@ -585,7 +588,7 @@ export default function App() {
         </View>
 
         <View style={styles.footerRow}>
-          <Text style={styles.footerText}>RAW / LOG / VIDEO PIPELINE  ·  ROADMAP</Text>
+          <Text style={styles.footerText}>{t('roadmapFooter')}</Text>
           <CircleHelp color={COLORS.muted} size={14} />
           <ChevronDown color={COLORS.muted} size={14} />
         </View>
